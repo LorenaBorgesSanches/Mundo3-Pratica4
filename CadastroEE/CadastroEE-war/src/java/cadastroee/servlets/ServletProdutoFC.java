@@ -14,12 +14,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-
 /**
  *
  * @author Lorena Sanches
  */
-public class ServletProduto extends HttpServlet {
+public class ServletProdutoFC extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -30,28 +29,68 @@ public class ServletProduto extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    @EJB ProdutoFacadeLocal facade;
+    @EJB
+    ProdutoFacadeLocal facade;
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-       
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ServletProduto</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet ServletProduto at " + request.getContextPath() + "</h1>");
-            
-            out.println("<h2>Produtos</h2>");
-            for (Produto produto :  facade.findAll()) {
-                out.println("<p>" + produto.getNome() + "</p>");
-            }
-            out.println("</body>");
-            out.println("</html>");
+
+        String acao = request.getParameter("acao");
+
+        if (acao == null) {
+            acao = "listar";
         }
+
+        String destino = "ProdutoLista.jsp";
+
+        switch (acao) {
+            case "listar" ->
+                request.setAttribute("lista", facade.findAll());
+            case "incluir" -> {
+                String nome = request.getParameter("nome");
+                String quantidade = request.getParameter("quantidade");
+                String preco = request.getParameter("preco");
+
+                Produto produto = new Produto();
+                produto.setNome(nome);
+                produto.setPrecoVenda(Float.parseFloat(preco));
+                produto.setQuantidade(Integer.parseInt(quantidade));
+
+                facade.create(produto);
+
+                request.setAttribute("lista", facade.findAll());
+            }
+            case "alterar" -> {
+                String id = request.getParameter("id");
+                String nome = request.getParameter("nome");
+                String quantidade = request.getParameter("quantidade");
+                String preco = request.getParameter("preco");
+
+                Produto produto = facade.find(Integer.valueOf(id));
+
+                produto.setNome(nome);
+                produto.setPrecoVenda(Float.parseFloat(preco));
+                produto.setQuantidade(Integer.parseInt(quantidade));
+
+                facade.edit(produto);
+                request.setAttribute("lista", facade.findAll());
+            }
+            case "excluir" -> {
+                String id = request.getParameter("id");
+                facade.remove(facade.find(Integer.valueOf(id)));
+                request.setAttribute("lista", facade.findAll());
+            }
+
+            case "formIncluir" ->
+                destino = "ProdutoDados.jsp";
+
+            case "formAlterar" -> {
+                String id = request.getParameter("id");
+                request.setAttribute("produto", facade.find(Integer.valueOf(id)));
+                destino = "ProdutoDados.jsp";
+            }
+        }
+        request.getRequestDispatcher(destino).forward(request, response);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
