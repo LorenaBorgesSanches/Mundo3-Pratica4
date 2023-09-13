@@ -8,7 +8,6 @@ import cadastroee.controller.ProdutoFacadeLocal;
 import cadastroee.model.Produto;
 import jakarta.ejb.EJB;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,9 +28,7 @@ public class ServletProdutoFC extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    @EJB
-    ProdutoFacadeLocal facade;
-
+    @EJB ProdutoFacadeLocal facade;
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
